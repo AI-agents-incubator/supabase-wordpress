@@ -1038,6 +1038,22 @@
         return;
       }
 
+      // ═══════════════════════════════════════════════════════════
+      // КЛАСС 2: Cooldown Protection (v0.10.5)
+      // Предотвращаем множественные отправки Magic Link
+      // Проблема: Пользователь кликает несколько раз → получает 5 писем → использует старое
+      // ═══════════════════════════════════════════════════════════
+      const cooldownKey = 'sb_magic_link_cooldown';
+      const lastSend = safeStorage.getItem(cooldownKey);
+      const now = Date.now();
+
+      if (lastSend && (now - parseInt(lastSend)) < 60000) {
+        const remaining = Math.ceil((60000 - (now - parseInt(lastSend))) / 1000);
+        showError(`⏱️ Подождите ${remaining} сек. перед повторной отправкой. ВЫ УЖЕ ЗАПРОСИЛИ ПИСЬМО! Проверьте почту (Спам, Промо). Каждая новая ссылка отменяет предыдущие!`);
+        console.log('🛡️ Magic Link cooldown active:', remaining, 'seconds remaining');
+        return;
+      }
+
       console.log('🎯 User submitted email for magic link');
 
       try {
@@ -1075,6 +1091,10 @@
           email: email,
           provider: 'magic_link'
         });
+
+        // Сохраняем timestamp отправки для cooldown (v0.10.5)
+        safeStorage.setItem(cooldownKey, now.toString());
+        console.log('✅ Magic Link sent - cooldown activated (60 seconds)');
 
         // Переключить на экран 2 (сразу показываем финальный экран без мигания)
         displayEmail.textContent = email;

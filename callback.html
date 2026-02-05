@@ -146,6 +146,192 @@
     text-decoration: underline;
     font-weight: 500;
   }
+
+  /* ========== HELP MODAL (v0.10.5) ========== */
+  .auth-help-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 100000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease;
+  }
+
+  .auth-help-modal.active {
+    display: flex;
+  }
+
+  .auth-help-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: slideUp 0.3s ease;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .auth-help-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: #f3f4f6;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 32px;
+    color: #6b7280;
+    transition: all 0.2s;
+  }
+
+  .auth-help-close:hover {
+    background: #e5e7eb;
+    color: #111827;
+  }
+
+  .auth-help-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 20px 0;
+    padding-right: 40px;
+  }
+
+  .auth-help-section {
+    margin-bottom: 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .auth-help-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .auth-help-subtitle {
+    font-size: 16px;
+    font-weight: 600;
+    color: #374151;
+    margin: 0 0 12px 0;
+  }
+
+  .auth-help-text {
+    font-size: 14px;
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+  }
+
+  .auth-help-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .auth-help-list li {
+    font-size: 14px;
+    color: #374151;
+    line-height: 1.6;
+    margin-bottom: 8px;
+    padding-left: 24px;
+    position: relative;
+  }
+
+  .auth-help-list li:before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #3b82f6;
+    font-weight: 600;
+  }
+
+  .auth-help-warning {
+    background: #fef3c7;
+    border-left: 4px solid #f59e0b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 12px 0;
+  }
+
+  .auth-help-warning-text {
+    font-size: 14px;
+    color: #92400e;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  .auth-help-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .auth-help-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+  }
+
+  .auth-help-btn-primary {
+    background: #2563eb;
+    color: white;
+  }
+
+  .auth-help-btn-primary:hover {
+    background: #1d4ed8;
+  }
+
+  .auth-help-btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  .auth-help-btn-secondary:hover {
+    background: #e5e7eb;
+  }
+
+  @media (max-width: 640px) {
+    .auth-help-content {
+      max-width: calc(100% - 32px);
+      padding: 24px;
+      margin: 16px;
+    }
+
+    .auth-help-actions {
+      flex-direction: column;
+    }
+  }
 </style>
 
 <div class="auth-callback-container">
@@ -154,6 +340,16 @@
   <div class="auth-debug" id="authDebug"></div>
   <div class="auth-retry" id="authRetry" style="display: none;">
     <a href="/">Вернуться на главную</a>
+  </div>
+</div>
+
+<!-- ========== HELP MODAL (v0.10.5) ========== -->
+<div class="auth-help-modal" id="auth-help-modal">
+  <div class="auth-help-content">
+    <button class="auth-help-close" id="auth-help-close">×</button>
+    <div id="auth-help-body">
+      <!-- Dynamic content will be inserted here -->
+    </div>
   </div>
 </div>
 
@@ -318,6 +514,167 @@
   }
 
   // ═══════════════════════════════════════════════════════════
+  // Help Modal System (v0.10.5)
+  // ═══════════════════════════════════════════════════════════
+
+  function showHelpModal(type, errorData = {}) {
+    const modal = document.getElementById('auth-help-modal');
+    const body = document.getElementById('auth-help-body');
+    const closeBtn = document.getElementById('auth-help-close');
+
+    if (!modal || !body || !closeBtn) return;
+
+    // Generate modal content based on error type
+    const content = getHelpContent(type, errorData);
+    body.innerHTML = content;
+
+    // Show modal
+    modal.classList.add('active');
+
+    // Close handlers
+    closeBtn.onclick = () => modal.classList.remove('active');
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.classList.remove('active');
+    };
+  }
+
+  function getHelpContent(type, errorData) {
+    const templates = {
+      'facebook_email': `
+        <h3 class="auth-help-title">❌ Facebook не предоставил email</h3>
+
+        <div class="auth-help-section">
+          <p class="auth-help-subtitle">Почему это происходит?</p>
+          <ul class="auth-help-list">
+            <li>Email не подтвержден в вашем Facebook аккаунте</li>
+            <li>Вы отказали в доступе к email при авторизации</li>
+            <li>В Facebook аккаунте не указан email</li>
+          </ul>
+        </div>
+
+        <div class="auth-help-section">
+          <p class="auth-help-subtitle">Что делать?</p>
+          <ul class="auth-help-list">
+            <li>Зайдите в <strong>Настройки Facebook → Контактная информация</strong> и убедитесь, что email подтвержден</li>
+            <li>Попробуйте войти через <strong>Google</strong> (обычно надежнее)</li>
+            <li>Используйте <strong>классический вход</strong> (email + пароль)</li>
+          </ul>
+        </div>
+
+        <div class="auth-help-warning">
+          <p class="auth-help-warning-text">
+            <strong>Совет:</strong> Если вы из России и используете VPN, попробуйте отключить его или сменить сервер. Некоторые VPN-серверы могут блокироваться Facebook.
+          </p>
+        </div>
+
+        <div class="auth-help-actions">
+          <a href="/login/" class="auth-help-btn auth-help-btn-primary">Классический вход</a>
+          <button class="auth-help-btn auth-help-btn-secondary" onclick="location.reload()">Попробовать снова</button>
+        </div>
+      `,
+
+      'otp_expired': `
+        <h3 class="auth-help-title">⏱️ Ссылка для входа устарела</h3>
+
+        <div class="auth-help-section">
+          <p class="auth-help-subtitle">Почему это происходит?</p>
+          <ul class="auth-help-list">
+            <li>Вы запросили ссылку несколько раз — <strong>старые ссылки автоматически отменяются</strong></li>
+            <li>Прошло слишком много времени с момента получения письма</li>
+            <li>Вы кликнули на ссылку из старого письма</li>
+          </ul>
+        </div>
+
+        <div class="auth-help-warning">
+          <p class="auth-help-warning-text">
+            <strong>⚠️ ВАЖНО:</strong> Если вы запросили несколько писем — используйте <strong>САМОЕ НОВОЕ</strong>. Каждая новая ссылка отменяет все предыдущие!
+          </p>
+        </div>
+
+        <div class="auth-help-section">
+          <p class="auth-help-subtitle">Что делать?</p>
+          <ul class="auth-help-list">
+            <li><strong>Удалите все старые письма</strong> с волшебными ссылками</li>
+            <li>Запросите новую ссылку <strong>ОДИН РАЗ</strong></li>
+            <li>Дождитесь письма (проверьте Спам, Промо, Обновления)</li>
+            <li>Используйте <strong>самую свежую</strong> ссылку</li>
+          </ul>
+        </div>
+
+        <div class="auth-help-actions">
+          <button class="auth-help-btn auth-help-btn-primary" onclick="location.href='/test-no-elem/'">Запросить новую ссылку</button>
+          <a href="/login/" class="auth-help-btn auth-help-btn-secondary">Классический вход</a>
+        </div>
+      `,
+
+      'vpn_cloudflare': `
+        <h3 class="auth-help-title">🔒 Возможная блокировка VPN/Cloudflare</h3>
+
+        <div class="auth-help-section">
+          <p class="auth-help-subtitle">Почему это происходит?</p>
+          <ul class="auth-help-list">
+            <li>VPN или proxy сервер блокируется Cloudflare защитой</li>
+            <li>IP-адрес попал в черный список из-за подозрительной активности</li>
+            <li>Слишком много запросов с одного IP (rate limiting)</li>
+          </ul>
+        </div>
+
+        <div class="auth-help-section">
+          <p class="auth-help-subtitle">Что делать?</p>
+          <ul class="auth-help-list">
+            <li><strong>Отключите VPN</strong> и попробуйте снова</li>
+            <li>Если VPN необходим — <strong>смените сервер</strong> (выберите другую страну)</li>
+            <li>Очистите кэш и cookies браузера</li>
+            <li>Попробуйте в режиме <strong>Инкогнито/Приватный просмотр</strong></li>
+            <li>Используйте другой браузер</li>
+          </ul>
+        </div>
+
+        <div class="auth-help-warning">
+          <p class="auth-help-warning-text">
+            <strong>Для пользователей из России:</strong> Некоторые VPN-серверы блокируются Google и Facebook. Попробуйте серверы в Европе (Нидерланды, Германия) или используйте классический вход.
+          </p>
+        </div>
+
+        <div class="auth-help-actions">
+          <button class="auth-help-btn auth-help-btn-primary" onclick="location.reload()">Попробовать снова</button>
+          <a href="/login/" class="auth-help-btn auth-help-btn-secondary">Классический вход</a>
+        </div>
+      `,
+
+      'generic_timeout': `
+        <h3 class="auth-help-title">⏱️ Превышено время ожидания</h3>
+
+        <div class="auth-help-section">
+          <p class="auth-help-subtitle">Почему это происходит?</p>
+          <ul class="auth-help-list">
+            <li>Медленное интернет-соединение</li>
+            <li>VPN замедляет соединение</li>
+            <li>Проблемы на стороне сервера авторизации</li>
+          </ul>
+        </div>
+
+        <div class="auth-help-section">
+          <p class="auth-help-subtitle">Что делать?</p>
+          <ul class="auth-help-list">
+            <li>Проверьте качество интернет-соединения</li>
+            <li>Отключите VPN (если используете)</li>
+            <li>Попробуйте в режиме Инкогнито</li>
+            <li>Используйте классический вход (email + пароль)</li>
+          </ul>
+        </div>
+
+        <div class="auth-help-actions">
+          <button class="auth-help-btn auth-help-btn-primary" onclick="location.reload()">Попробовать снова</button>
+          <a href="/login/" class="auth-help-btn auth-help-btn-secondary">Классический вход</a>
+        </div>
+      `
+    };
+
+    return templates[type] || templates['generic_timeout'];
+  }
+
+  // ═══════════════════════════════════════════════════════════
   // Token Extraction
   // ═══════════════════════════════════════════════════════════
 
@@ -342,28 +699,55 @@
       debug('Error type', errorType);
       debug('Error description', errorDescription);
 
-      // User-friendly messages for common errors
+      // ═══════════════════════════════════════════════════════════
+      // Enhanced Error Handling with Help Modal (v0.10.5)
+      // ═══════════════════════════════════════════════════════════
       let userMessage;
+      let helpModalType = null;
 
-      if (errorCode === 'otp_expired') {
-        userMessage = 'Ссылка для входа устарела (истёк срок действия). ВАЖНО: Если вы запрашивали ссылку несколько раз — используйте САМОЕ НОВОЕ письмо. Старые ссылки автоматически отменяются при создании новых.';
+      // КЛАСС 1: Ошибки на стороне пользователя (показываем модальное окно с инструкциями)
+      if (errorDescription && errorDescription.includes('Error getting user email')) {
+        // Facebook не предоставил email
+        userMessage = 'Facebook не предоставил ваш email. Нажмите "Что делать?" для инструкций.';
+        helpModalType = 'facebook_email';
+      } else if (errorCode === 'otp_expired') {
+        // OTP ссылка устарела
+        userMessage = 'Ссылка для входа устарела. Нажмите "Что делать?" для инструкций.';
+        helpModalType = 'otp_expired';
       } else if (errorCode === 'otp_disabled') {
+        // OTP отключен (редкий случай)
         userMessage = 'Вход по email временно недоступен. Попробуйте войти через Google или Facebook.';
+        helpModalType = 'vpn_cloudflare'; // Может быть связано с блокировкой
       } else if (errorType === 'access_denied') {
-        userMessage = 'Доступ запрещён. Если проблема повторяется, свяжитесь с поддержкой.';
+        // Доступ запрещен (может быть VPN/Cloudflare)
+        userMessage = 'Доступ запрещён. Возможно, блокировка VPN или Cloudflare.';
+        helpModalType = 'vpn_cloudflare';
+      } else if (errorCode === 'unexpected_failure') {
+        // Неожиданная ошибка (часто VPN/Cloudflare)
+        userMessage = 'Неожиданная ошибка. Возможно, проблема с VPN или интернет-соединением.';
+        helpModalType = 'vpn_cloudflare';
       } else {
-        // Generic error with description from Supabase
+        // КЛАСС 2: Generic ошибки
         userMessage = errorDescription
           ? decodeURIComponent(errorDescription.replace(/\+/g, ' '))
           : 'Ошибка входа. Если проблема повторяется, свяжитесь с поддержкой.';
+        helpModalType = 'generic_timeout';
       }
 
       // Track telemetry: auth failure (v0.10.2)
       trackTelemetry('auth_failure', {
         error_code: errorCode || errorType,
         error_message: errorDescription || userMessage,
-        provider: 'unknown' // Provider unknown at error stage
+        provider: 'unknown', // Provider unknown at error stage
+        help_modal_type: helpModalType // Track which help was shown
       });
+
+      // Show help modal after a short delay (let user see the error message first)
+      if (helpModalType) {
+        setTimeout(() => {
+          showHelpModal(helpModalType, { errorCode, errorType, errorDescription });
+        }, 1500);
+      }
 
       throw new Error(userMessage);
     }
@@ -571,31 +955,49 @@
           referrer: document.referrer || null
         });
 
-        // Show alternative login option
+        // Show alternative login option with Help button (v0.10.5)
         clearInterval(dotsTimer);
       clearTimeout(timeoutId); // Cancel timeout - error already displayed
         const instantLoader = document.getElementById('instant-loader');
         if (instantLoader) {
           instantLoader.innerHTML = `
-            <div style="text-align: center; max-width: 400px; padding: 40px;">
+            <div style="text-align: center; max-width: 480px; padding: 40px;">
               <h2 style="color: #dc2626; font-size: 24px; margin: 0 0 20px 0; font-weight: 600;">⚠️ Что-то пошло не так</h2>
               <p style="color: #666; font-size: 16px; margin: 0 0 30px 0; line-height: 1.5;">
-                Вход занял слишком много времени.
+                Вход занял слишком много времени. Возможно, проблема с VPN или интернет-соединением.
               </p>
-              <a href="/login/" style="
-                display: inline-block;
-                padding: 14px 28px;
-                background: #2563eb;
-                color: white;
-                text-decoration: none;
-                border-radius: 8px;
-                font-weight: 600;
-                font-size: 16px;
-                transition: background 0.2s;
-              " onmouseover="this.style.background='#1d4ed8'"
-                 onmouseout="this.style.background='#2563eb'">
-                Попробовать классический вход (email + пароль)
-              </a>
+              <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
+                <button onclick="showHelpModal('generic_timeout')" style="
+                  padding: 14px 24px;
+                  background: #f59e0b;
+                  color: white;
+                  border: none;
+                  border-radius: 8px;
+                  font-weight: 600;
+                  font-size: 16px;
+                  cursor: pointer;
+                  transition: background 0.2s;
+                  min-width: 140px;
+                " onmouseover="this.style.background='#d97706'"
+                   onmouseout="this.style.background='#f59e0b'">
+                  💡 Что делать?
+                </button>
+                <a href="/login/" style="
+                  display: inline-block;
+                  padding: 14px 24px;
+                  background: #2563eb;
+                  color: white;
+                  text-decoration: none;
+                  border-radius: 8px;
+                  font-weight: 600;
+                  font-size: 16px;
+                  transition: background 0.2s;
+                  min-width: 140px;
+                " onmouseover="this.style.background='#1d4ed8'"
+                   onmouseout="this.style.background='#2563eb'">
+                  Классический вход
+                </a>
+              </div>
               <p style="margin-top: 20px; font-size: 14px; color: #666;">
                 Или <a href="mailto:support@alexeykrol.com" style="color: #2563eb; text-decoration: underline;">напишите в поддержку</a>
               </p>
@@ -699,27 +1101,59 @@
       // Update error message
       updateStatus('⚠️ ' + error.message, 'error');
 
-      // Update retry panel with alternative login options
+      // Update retry panel with alternative login options + Help button (v0.10.5)
       const retryPanel = document.getElementById('authRetry');
       if (retryPanel) {
+        // Detect error type for help modal
+        const errorMsg = error.message || '';
+        let helpType = 'generic_timeout';
+
+        if (errorMsg.includes('Facebook') || errorMsg.includes('email from external')) {
+          helpType = 'facebook_email';
+        } else if (errorMsg.includes('устарела') || errorMsg.includes('expired')) {
+          helpType = 'otp_expired';
+        } else if (errorMsg.includes('VPN') || errorMsg.includes('Cloudflare') || errorMsg.includes('Доступ запрещён')) {
+          helpType = 'vpn_cloudflare';
+        }
+
         retryPanel.innerHTML = `
           <p style="color: #666; font-size: 14px; margin: 15px 0;">
             Попробуйте альтернативный способ:
           </p>
-          <a href="/login/" style="
-            display: inline-block;
-            padding: 12px 24px;
-            background: #2563eb;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 500;
-            transition: background 0.2s;
-            margin-bottom: 10px;
-          " onmouseover="this.style.background='#1d4ed8'"
-             onmouseout="this.style.background='#2563eb'">
-            Войти через email + пароль
-          </a>
+          <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+            <button onclick="showHelpModal('${helpType}')" style="
+              flex: 1;
+              min-width: 140px;
+              padding: 12px 20px;
+              background: #f59e0b;
+              color: white;
+              border: none;
+              border-radius: 6px;
+              font-weight: 600;
+              cursor: pointer;
+              transition: background 0.2s;
+              font-size: 14px;
+            " onmouseover="this.style.background='#d97706'"
+               onmouseout="this.style.background='#f59e0b'">
+              💡 Что делать?
+            </button>
+            <a href="/login/" style="
+              flex: 1;
+              min-width: 140px;
+              padding: 12px 20px;
+              background: #2563eb;
+              color: white;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: 600;
+              transition: background 0.2s;
+              text-align: center;
+              font-size: 14px;
+            " onmouseover="this.style.background='#1d4ed8'"
+               onmouseout="this.style.background='#2563eb'">
+              Классический вход
+            </a>
+          </div>
           <p style="font-size: 14px; color: #666; margin-top: 10px;">
             Или <a href="${formPageUrl}" style="color: #2563eb; text-decoration: underline;">вернуться к форме</a>
           </p>
