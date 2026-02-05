@@ -2,6 +2,108 @@
 
 All notable changes to Supabase Bridge are documented in this file.
 
+## [0.10.5] - 2026-02-05
+
+### 🎯 Help Modal System + Magic Link Cooldown
+
+**Major feature: Self-service help system for authentication errors**
+
+**Problem:**
+- Users encounter rare authentication errors (~5% of cases)
+- Facebook: "Error getting user email from external provider"
+- Magic Link: "Email link is invalid or has expired"
+- Users don't know what to do → submit support tickets
+- No guidance for VPN/Cloudflare blocks, old Magic Link emails
+
+**Solution - КЛАСС 1: Модальное окно с инструкциями**
+
+Added Help Modal System with 4 types of instructions:
+
+1. **Facebook Email Error** - Instructions for:
+   - Verifying email in Facebook settings
+   - Understanding why Facebook didn't provide email
+   - VPN tips for Russian users
+   - Alternative login methods (Google, classic login)
+
+2. **Magic Link Expired** - Explains:
+   - Old links are cancelled when new ones are requested
+   - How to use the NEWEST email only
+   - Step-by-step troubleshooting
+
+3. **VPN/Cloudflare Block** - Guidance for:
+   - Disabling VPN or switching servers
+   - Clearing cache/cookies
+   - Using Incognito mode
+   - Server recommendations for Russian users
+
+4. **Generic Timeout** - Suggestions for:
+   - Checking internet connection
+   - Disabling VPN
+   - Alternative authentication methods
+
+**Features:**
+- Auto-opens after 1.5 seconds on error
+- Manual "💡 Что делать?" button in all error UI
+- Responsive design (mobile-friendly)
+- Closes on outside click or X button
+
+**Solution - КЛАСС 2: Code Improvements**
+
+1. **Enhanced Error Handling:**
+   - Specific handling for `Error getting user email`
+   - Specific handling for `unexpected_failure`, `access_denied`, `otp_expired`
+   - Context-aware help modal selection
+
+2. **Magic Link Cooldown (60 seconds):**
+   - Prevents multiple email sends
+   - Shows countdown: "Подождите 57 сек..."
+   - Reduces old Magic Link emails → reduces otp_expired errors
+   - Works with Safari Privacy Mode (in-memory fallback)
+
+3. **Telemetry Tracking:**
+   - Track which help modal type was shown
+   - Enables data-driven improvements
+   - Field: `help_modal_type` in `auth_telemetry`
+
+**Expected Impact:**
+- ✅ 50-70% reduction in authentication support tickets
+- ✅ Self-service problem resolution
+- ✅ Better user experience during errors
+- ✅ Fewer old Magic Link emails in circulation
+
+**Code Changes:**
+
+*callback.html:*
+- Added Help Modal CSS (~140 lines)
+- Added Help Modal HTML component
+- Added `showHelpModal(type)` function
+- Added `getHelpContent(type)` with 4 templates
+- Enhanced error handling with modal types
+- Added "Что делать?" button in error UI and timeout handler
+- Added telemetry tracking for help modal type
+
+*auth-form.html:*
+- Added cooldown check before Magic Link send (60 sec)
+- Added cooldown timestamp save after send
+- Updated error message for cooldown
+
+**Files Modified:**
+- `callback.html` - Help Modal System + Enhanced Error Handling
+- `auth-form.html` - Magic Link Cooldown
+- `AUTH_ERROR_HANDLING_v0.10.5.md` - Complete documentation
+
+**Testing:**
+- Manual testing required (errors are rare, ~5% of users)
+- Wait for user reports to validate effectiveness
+- Monitor `auth_telemetry` for help modal usage
+
+**Documentation:**
+- See `AUTH_ERROR_HANDLING_v0.10.5.md` for full details
+- User Experience Flow scenarios documented
+- Testing checklist included
+
+---
+
 ## [0.10.4] - 2026-01-26
 
 ### 🐛 JWT Clock Skew Fix
