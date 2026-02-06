@@ -2,6 +2,47 @@
 
 All notable changes to Supabase Bridge are documented in this file.
 
+## [0.10.6] - 2026-02-06
+
+### 🔧 Auto-Enrollment for Manual Transactions (Zapier/Crypto)
+
+**Problem:**
+- Users who pay via external methods (rubles on external site, cryptocurrency) are added to MemberPress via Zapier
+- These transactions have `gateway = 'manual'` and don't trigger the standard payment hooks
+- Result: Users have membership but aren't auto-enrolled in LearnDash courses
+- Users complain: "I have membership but no course access"
+
+**Solution:**
+- Added new hooks to catch manual transactions and subscriptions:
+  - `mepr-txn-store` - catches ALL transactions when saved to database
+  - `mepr_subscription_post_update` - catches subscriptions created via API/Zapier
+- Clear separation of concerns:
+  - Stripe/PayPal → existing hooks (`mepr_event_transaction_completed`, `mepr_subscription_transition_status`)
+  - Manual (Zapier, crypto) → new hooks (only process `gateway = 'manual'`)
+- No duplicate enrollments - each transaction processed by ONE hook only
+
+**Features:**
+- Gateway-based routing prevents duplicate enrollments
+- 10-minute window for subscriptions (accounts for rare Zapier delays)
+- Robust error handling:
+  - Validates required properties exist
+  - Checks for clock skew (server time differences)
+  - Detailed error logging for debugging
+- All auto-enrollment uses existing Course Access tab rules (Membership → Course pairs)
+
+**Technical Details:**
+- Transaction hook: Only processes `gateway = 'manual'` + `status = 'complete'`
+- Subscription hook: Only processes newly created subscriptions (< 10 minutes old) with `status = 'active'`
+- Protection against edge cases: missing properties, invalid dates, clock skew
+
+**Result:**
+- ✅ Zapier-created memberships now trigger auto-enrollment
+- ✅ Crypto payments now trigger auto-enrollment
+- ✅ No duplicate enrollments for Stripe/PayPal
+- ✅ Handles Zapier delays up to 10 minutes
+
+---
+
 ## [0.10.5] - 2026-02-05
 
 ### 🎯 Help Modal System + Magic Link Cooldown

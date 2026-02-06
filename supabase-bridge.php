@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Supabase Bridge (Auth)
  * Description: Mirrors Supabase users into WordPress and logs them in via JWT. Enhanced security with audit logging and hardening. Includes webhook system for n8n/Make.com integration. Production debugging with enhanced logging.
- * Version: 0.10.4
+ * Version: 0.10.6
  * Author: Alexey Krol
  * License: MIT
  * Requires at least: 5.0
@@ -5722,6 +5722,119 @@ function sb_on_subscription_status_transition($old_status, $new_status, $subscri
 
   // Auto-enroll
   sb_auto_enroll_user_on_membership_purchase($subscription->user_id, $subscription->product_id);
+}
+
+/**
+ * Hook: MemberPress transaction store (for MANUAL transactions ONLY)
+ * This hook fires when transaction is saved to database
+ * CRITICAL for Zapier-created transactions (gateway = 'manual')
+ *
+ * Separation of concerns:
+ * - Stripe/PayPal → handled by mepr_event_transaction_completed (existing hook)
+ * - Manual (Zapier, crypto) → handled by THIS hook
+ */
+add_action('mepr-txn-store', 'sb_on_transaction_store', 10, 1);
+function sb_on_transaction_store($txn) {
+  if (!$txn || !is_object($txn)) {
+    return;
+  }
+
+  // Verify required properties exist
+  if (!isset($txn->gateway) || !isset($txn->status) || !isset($txn->user_id) || !isset($txn->product_id)) {
+    error_log('Supabase Bridge: Transaction store hook - missing required properties');
+    return;
+  }
+
+  // ONLY process manual gateway transactions (Zapier-created, crypto payments)
+  // Stripe/PayPal handled by mepr_event_transaction_completed hook
+  if ($txn->gateway !== 'manual') {
+    return;
+  }
+
+  // Only process completed transactions
+  if (!in_array($txn->status, ['complete', 'completed'])) {
+    return;
+  }
+
+  // Auto-enroll user in course based on membership → course pairs
+  sb_auto_enroll_user_on_membership_purchase($txn->user_id, $txn->product_id);
+
+  error_log(sprintf(
+    'Supabase Bridge: Manual transaction auto-enrollment - User ID: %d, Product ID: %d, Gateway: %s',
+    $txn->user_id,
+    $txn->product_id,
+    $txn->gateway
+  ));
+}
+
+/**
+ * Hook: MemberPress subscription post-update (for Zapier-created subscriptions)
+ * Fires when subscription is saved to database
+ *
+ * Separation of concerns:
+ * - Normal subscriptions → handled by mepr_subscription_transition_status (existing hook)
+ * - Zapier-created subscriptions → handled by THIS hook
+ *
+ * Note: This catches subscriptions created directly with 'active' status (no transition)
+ */
+add_action('mepr_subscription_post_update', 'sb_on_subscription_post_update', 10, 1);
+function sb_on_subscription_post_update($subscription) {
+  if (!$subscription || !is_object($subscription)) {
+    return;
+  }
+
+  // Verify required properties exist
+  if (!isset($subscription->status) || !isset($subscription->user_id) || !isset($subscription->product_id) || !isset($subscription->created_at)) {
+    error_log('Supabase Bridge: Subscription post-update hook - missing required properties');
+    return;
+  }
+
+  // Only process active subscriptions
+  if ($subscription->status !== 'active') {
+    return;
+  }
+
+  // Only process newly created subscriptions (within last 10 minutes)
+  // This distinguishes Zapier-created subscriptions from status updates
+  // 10-minute window accounts for rare Zapier delays (usually ~10s, rarely 5-10min)
+  $created_timestamp = strtotime($subscription->created_at);
+
+  // Verify strtotime succeeded
+  if ($created_timestamp === false) {
+    error_log(sprintf(
+      'Supabase Bridge: Subscription post-update hook - invalid created_at format: %s',
+      $subscription->created_at
+    ));
+    return;
+  }
+
+  $current_timestamp = current_time('timestamp');
+  $age_seconds = $current_timestamp - $created_timestamp;
+
+  if ($age_seconds > 600) {
+    // Subscription is old (>10 minutes), not a new Zapier creation
+    // Let mepr_subscription_transition_status handle this
+    return;
+  }
+
+  // Sanity check: age should not be negative (clock skew protection)
+  if ($age_seconds < -60) {
+    error_log(sprintf(
+      'Supabase Bridge: Subscription post-update hook - clock skew detected, age: %d seconds',
+      $age_seconds
+    ));
+    return;
+  }
+
+  // Auto-enroll user in course based on membership → course pairs
+  sb_auto_enroll_user_on_membership_purchase($subscription->user_id, $subscription->product_id);
+
+  error_log(sprintf(
+    'Supabase Bridge: New subscription auto-enrollment - User ID: %d, Product ID: %d, Age: %d seconds',
+    $subscription->user_id,
+    $subscription->product_id,
+    $age_seconds
+  ));
 }
 
 // ============================================================================
