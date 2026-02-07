@@ -1,18 +1,35 @@
 # BACKLOG — Supabase Bridge
 
 *Framework: Claude Code Starter v2.3.1*
-*Last Updated: 2026-01-25*
+*Last Updated: 2026-02-06*
 
 ---
 
 ## Current Status
 
-**Version:** 0.10.4 (Production Ready)
+**Version:** 0.10.6 (Production Ready)
 **Phase:** Maintenance
 
 ---
 
 ## Active Sprint
+
+### Completed - v0.10.6 Release (2026-02-06)
+- [x] Fixed auto-enrollment for Zapier/manual transactions (gateway = 'manual')
+- [x] Added mepr-txn-store and mepr_subscription_post_update hooks
+- [x] Gateway-based routing prevents duplicate enrollments
+- [x] 10-minute window for subscription processing
+- [x] Robust error handling for clock skew and missing properties
+- [x] All manual transactions now trigger Course Access auto-enrollment
+
+### Completed - v0.10.5 Release (2026-02-05)
+- [x] Implemented Help Modal System for authentication errors
+- [x] Added 4 types of help modals (Facebook email, Magic Link expired, VPN/Cloudflare block, generic timeout)
+- [x] Auto-opens modal after 1.5 seconds on error
+- [x] Manual "💡 Что делать?" button in all error UI
+- [x] Added Magic Link cooldown (60 seconds)
+- [x] Prevents double-submit with countdown: "Подождите 57 сек..."
+- [x] Responsive design (mobile-friendly)
 
 ### Completed - v0.10.4 Release (2026-01-26)
 - [x] Fixed JWT clock skew issue ("Cannot handle token with iat prior to..." error)

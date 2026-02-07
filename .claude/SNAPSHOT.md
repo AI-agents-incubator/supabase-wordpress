@@ -1,7 +1,7 @@
 # SNAPSHOT — Supabase Bridge
 
 *Framework: Claude Code Starter v2.3.1*
-*Last Updated: 2026-01-25*
+*Last Updated: 2026-02-06*
 
 ---
 
@@ -43,10 +43,12 @@
 **Phase 26: Auth UX & Error Handling (v0.10.2)** [статус: ✅]
 **Phase 27: MySQL Lock Deadlock Fix (v0.10.3)** [статус: ✅]
 **Phase 28: JWT Clock Skew Fix (v0.10.4)** [статус: ✅]
+**Phase 29: Help Modal System + Magic Link Cooldown (v0.10.5)** [статус: ✅]
+**Phase 30: Auto-Enrollment for Manual Transactions (v0.10.6)** [статус: ✅]
 
-**Общий прогресс:** 100% MVP + All Auth Methods Fixed + JWT Clock Skew Resolved + MySQL Lock Deadlock Resolved + WordPress Native Auth Fallback + Cross-Device Magic Link + Data Integrity Monitoring + Safari Privacy Support + PKCE Flow Support + Russian Localization + Comprehensive Security + Universal Membership/Enrollment System + Universal MemberPress Webhooks + Course Access Auto-Enrollment + Checkout Authentication Overlay + Landing URL Marketing Analytics + Accurate Error Messages (Production Ready)
+**Общий прогресс:** 100% MVP + All Auth Methods Fixed + JWT Clock Skew Resolved + MySQL Lock Deadlock Resolved + WordPress Native Auth Fallback + Cross-Device Magic Link + Data Integrity Monitoring + Safari Privacy Support + PKCE Flow Support + Russian Localization + Comprehensive Security + Universal Membership/Enrollment System + Universal MemberPress Webhooks + Course Access Auto-Enrollment + Checkout Authentication Overlay + Landing URL Marketing Analytics + Accurate Error Messages + Help Modal System + Magic Link Cooldown + Zapier/Manual Transaction Auto-Enrollment (Production Ready)
 
-**Текущая фаза:** v0.10.4 JWT Clock Skew Fix (Phase 28 finished)
+**Текущая фаза:** v0.10.6 Manual Transaction Auto-Enrollment (Phase 30 finished)
 
 ---
 
@@ -634,11 +636,77 @@ supabase-bridge/
 - Magic Link authentication working ✅
 - 60-second leeway handles clock drift ✅
 
+### Phase 29: Help Modal System + Magic Link Cooldown (v0.10.5) - Completed 2026-02-05
+1. ✅ **Help Modal System** (`auth-form.html`, `callback.html`)
+   - Auto-opens modal after 1.5 seconds on authentication errors
+   - Manual "💡 Что делать?" button in all error UI
+   - 4 types of help modals: Facebook email error, Magic Link expired, VPN/Cloudflare block, generic timeout
+   - Responsive design (mobile-friendly)
+   - Closes on outside click or X button
+2. ✅ **Magic Link Cooldown** (`auth-form.html`)
+   - 60-second cooldown prevents double-submit
+   - Countdown display: "Подождите 57 сек..."
+   - Disabled button during cooldown
+   - Prevents email spam and rate limiting issues
+3. ✅ **Enhanced Error Handling** (`callback.html`)
+   - Specific handling for "Error getting user email from external provider"
+   - Specific handling for unexpected_failure, access_denied, otp_expired
+   - Context-aware help modal selection
+
+**Problem:**
+- Users encounter rare authentication errors (~5% of cases)
+- No guidance for VPN/Cloudflare blocks, old Magic Link emails, Facebook email issues
+- Users submit support tickets instead of self-solving
+
+**Results:**
+- Self-service help system reduces support load ✅
+- Clear instructions for common error scenarios ✅
+- Magic Link cooldown prevents rate limiting ✅
+- Better UX for authentication errors ✅
+
+### Phase 30: Auto-Enrollment for Manual Transactions (v0.10.6) - Completed 2026-02-06
+1. ✅ **New Hooks for Manual Transactions** (`supabase-bridge.php`)
+   - Added `mepr-txn-store` hook - catches ALL transactions when saved to database
+   - Added `mepr_subscription_post_update` hook - catches subscriptions created via API/Zapier
+   - Clear separation: Stripe/PayPal → existing hooks, Manual (Zapier, crypto) → new hooks
+2. ✅ **Gateway-Based Routing** (`supabase-bridge.php`)
+   - Only process `gateway = 'manual'` in new hooks
+   - Prevents duplicate enrollments (each transaction processed by ONE hook only)
+   - 10-minute window for subscription processing (accounts for Zapier delays)
+3. ✅ **Robust Error Handling** (`supabase-bridge.php`)
+   - Validates required properties exist before processing
+   - Checks for clock skew (server time differences)
+   - Detailed error logging for debugging
+   - All auto-enrollment uses existing Course Access tab rules
+
+**Problem:**
+- Users who pay via external methods (rubles on external site, cryptocurrency) are added to MemberPress via Zapier
+- These transactions have `gateway = 'manual'` and don't trigger standard payment hooks
+- Result: Users have membership but aren't auto-enrolled in LearnDash courses
+
+**Results:**
+- Zapier-created memberships now trigger auto-enrollment ✅
+- Crypto payments now trigger auto-enrollment ✅
+- No duplicate enrollments for Stripe/PayPal ✅
+- Handles Zapier delays up to 10 minutes ✅
+
 ---
 
 ## 🔄 Текущая работа: Maintenance Mode
 
 **Status:** All critical issues resolved. System stable.
+
+### Completed (2026-02-06) - Phase 30: Auto-Enrollment for Manual Transactions
+- ✅ **Manual transaction support** — Zapier and crypto payments now trigger auto-enrollment
+- ✅ **Gateway-based routing** — Prevents duplicate enrollments
+- ✅ **Robust error handling** — Clock skew checks, property validation
+- ✅ **Production deployed** — supabase-bridge.php uploaded and verified
+
+### Completed (2026-02-05) - Phase 29: Help Modal System + Magic Link Cooldown
+- ✅ **Help modal system** — Self-service instructions for authentication errors
+- ✅ **Magic Link cooldown** — 60-second cooldown prevents rate limiting
+- ✅ **4 modal types** — Facebook email, Magic Link expired, VPN block, generic timeout
+- ✅ **Production deployed** — auth-form.html and callback.html uploaded
 
 ### Completed (2026-01-26) - Phase 28: JWT Clock Skew Fix
 - ✅ **JWT leeway added** — 60-second tolerance for clock skew between servers
@@ -694,10 +762,10 @@ supabase-bridge/
 
 **Status:** ✅ Production Ready
 **Live Sites:**
-- https://alexeykrol.com (v0.10.4 - stable, JWT clock skew fixed, MySQL lock deadlock fixed, WordPress native auth fallback, Accurate error messages, Auth UX fixes, Email spam fixed, Landing URL tracking, Course Access auto-enrollment, Checkout auth overlay, MemberPress webhooks, cross-device Magic Link, data integrity monitoring, universal membership/enrollment, PKCE flow support, Russian UI, Safari compatible)
-**Version:** 0.10.4
-**Last Update:** 2026-01-26
-**Known Issues:** 0 (All auth methods working, JWT clock skew resolved, MySQL lock deadlock resolved, WordPress /login/ fallback available, 0% failure rate, accurate error messages for OAuth errors, emails deliver to inbox, callback timeout monitoring active, landing URL tracking active, checkout authentication overlay deployed, course access auto-enrollment active, 100% registration tracking, MemberPress webhook system, cross-device Magic Link, data integrity monitoring, universal membership/enrollment system, PKCE flow support, Safari Privacy supported, Russian localization, repository clean)
+- https://alexeykrol.com (v0.10.6 - stable, Zapier/manual transaction auto-enrollment, Help modal system, Magic Link cooldown, JWT clock skew fixed, MySQL lock deadlock fixed, WordPress native auth fallback, Accurate error messages, Auth UX fixes, Email spam fixed, Landing URL tracking, Course Access auto-enrollment, Checkout auth overlay, MemberPress webhooks, cross-device Magic Link, data integrity monitoring, universal membership/enrollment, PKCE flow support, Russian UI, Safari compatible)
+**Version:** 0.10.6
+**Last Update:** 2026-02-06
+**Known Issues:** 0 (All auth methods working, Zapier/crypto auto-enrollment working, Help modal system deployed, Magic Link cooldown active, JWT clock skew resolved, MySQL lock deadlock resolved, WordPress /login/ fallback available, 0% failure rate, accurate error messages for OAuth errors, emails deliver to inbox, callback timeout monitoring active, landing URL tracking active, checkout authentication overlay deployed, course access auto-enrollment active, 100% registration tracking, MemberPress webhook system, cross-device Magic Link, data integrity monitoring, universal membership/enrollment system, PKCE flow support, Safari Privacy supported, Russian localization, repository clean)
 
 ---
 
