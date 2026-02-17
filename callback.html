@@ -688,9 +688,14 @@
     // STEP 1: Check for Supabase errors FIRST (before looking for tokens)
     // ═══════════════════════════════════════════════════════════
     const hash = window.location.hash;
-    if (hash && hash.includes('error=')) {
-      debug('Supabase error detected in URL hash');
-      const errorParams = new URLSearchParams(hash.substring(1));
+    const query = window.location.search;
+    const queryParams = query ? new URLSearchParams(query.substring(1)) : null;
+    const hashHasError = !!(hash && hash.includes('error='));
+    const queryHasError = !!(queryParams && (queryParams.get('error') || queryParams.get('error_code')));
+
+    if (hashHasError || queryHasError) {
+      debug('Supabase error detected in URL');
+      const errorParams = hashHasError ? new URLSearchParams(hash.substring(1)) : queryParams;
       const errorCode = errorParams.get('error_code');
       const errorType = errorParams.get('error');
       const errorDescription = errorParams.get('error_description');

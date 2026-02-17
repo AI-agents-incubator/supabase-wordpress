@@ -1252,6 +1252,8 @@
       codeInput.focus();
     });
 
+    let isCodeSubmitting = false;
+
     verifyBtn.addEventListener('click', async () => {
       const email = displayEmail.textContent;
       const code = codeInput.value.trim();
@@ -1266,8 +1268,21 @@
         return;
       }
 
+      if (isCodeSubmitting) {
+        console.log('⚠️ Verification code already submitting, ignoring duplicate click');
+        return;
+      }
+
+      let shouldRestoreButton = true;
+      const originalText = verifyBtn.textContent;
+
       try {
-        const { error } = await supabaseClient.auth.verifyOtp({
+        isCodeSubmitting = true;
+        verifyBtn.disabled = true;
+        verifyBtn.textContent = 'Проверяем...';
+        verifyBtn.style.opacity = '0.6';
+
+        const { data, error } = await supabaseClient.auth.verifyOtp({
           email: email,
           token: code,
           type: 'email'
@@ -1275,9 +1290,45 @@
 
         if (error) throw error;
 
+        // Opera VPN может зависнуть на magic link verify redirect.
+        // Для code flow завершаем вход напрямую через callback с токенами сессии.
+        let session = data?.session || null;
+        if (!session) {
+          const { data: sessionData } = await supabaseClient.auth.getSession();
+          session = sessionData?.session || null;
+        }
+
+        if (!session || !session.access_token) {
+          throw new Error('Код подтверждён, но не удалось создать сессию. Отключите VPN и попробуйте снова.');
+        }
+
+        const currentPage = window.location.pathname;
+        let callbackWithParam = '{{CALLBACK_URL}}?registration_url=' + encodeURIComponent(currentPage);
+        if (LANDING_URL) {
+          callbackWithParam += '&landing_url=' + encodeURIComponent(LANDING_URL);
+        }
+
+        const hashParams = new URLSearchParams();
+        hashParams.set('access_token', session.access_token);
+        hashParams.set('token_type', session.token_type || 'bearer');
+        if (session.refresh_token) {
+          hashParams.set('refresh_token', session.refresh_token);
+        }
+
+        showSuccess('Код подтверждён. Выполняем вход...');
+        shouldRestoreButton = false;
+        window.location.href = callbackWithParam + '#' + hashParams.toString();
+
       } catch (error) {
         console.error('Verification error:', error);
         showError(error.message || 'Неверный код подтверждения');
+      } finally {
+        if (shouldRestoreButton) {
+          verifyBtn.disabled = false;
+          verifyBtn.textContent = originalText;
+          verifyBtn.style.opacity = '1';
+          isCodeSubmitting = false;
+        }
       }
     });
 
