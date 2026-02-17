@@ -518,24 +518,24 @@
         Нажмите на волшебную ссылку в письме для входа
       </p>
 
-      <!-- Код (опционально) - СКРЫТ, мы не используем verification code -->
-      <div class="sb-code-toggle" style="display: none;">
-        <a class="sb-link" id="sb-show-code">Есть код подтверждения?</a>
+      <!-- Код подтверждения (альтернативный вход для VPN/проблем с редиректом) -->
+      <div class="sb-code-toggle">
+        <a class="sb-link" id="sb-show-code">💡 Проблемы со входом? Используйте код из письма</a>
       </div>
 
       <div class="sb-code-section" id="sb-code-section">
-        <label class="sb-code-label" for="sb-code-input">Введите код подтверждения</label>
+        <label class="sb-code-label" for="sb-code-input">Введите 6-значный код из письма</label>
         <input
           type="text"
           id="sb-code-input"
           class="sb-code-input"
-          placeholder="000000"
+          placeholder="Код из письма (6 цифр)"
           maxlength="6"
           pattern="[0-9]{6}"
           inputmode="numeric"
         >
         <button class="sb-btn sb-btn-primary sb-verify-btn" id="sb-verify-btn">
-          Подтвердить email
+          Войти по коду
         </button>
       </div>
 
