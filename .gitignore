@@ -280,4 +280,7 @@ dialog/2026-01-10_session-31603815.md
 dialog/2026-01-10_session-014f591a.md
 dialog/2026-01-10_session-139b17c4.md
 dialog/2026-01-10_session-5d3d87f2.md
-dialog/2026-01-10_session-9d6a6938.md
+dialog/2026-01-10_session-9d6a6938.md.last-backup
+test-results/
+playwright-report/
+playwright/.cache/

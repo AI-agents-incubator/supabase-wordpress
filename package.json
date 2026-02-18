@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "test:smoke": "playwright test tests/e2e-production/smoke.spec.js --reporter=line",
+    "test:chrome": "playwright test tests/e2e-production/chrome-desktop.spec.js --project=chrome-desktop",
+    "test:mobile": "playwright test tests/e2e-production/mobile.spec.js",
+    "test:special": "playwright test tests/e2e-production/special-scenarios.spec.js",
+    "test:all": "playwright test tests/e2e-production/",
+    "test:production": "playwright test tests/e2e-production/ --reporter=html",
+    "test:headed": "playwright test tests/e2e-production/ --headed",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:test": "./scripts/deploy-and-test.sh",
+    "sync": "./scripts/sync-production.sh"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "chokidar": "^5.0.0"
+  }
+}

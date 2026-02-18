@@ -375,6 +375,42 @@ curl -I https://yoursite.com/reg_ai_intro/ | grep -i cache
 
 ---
 
+## 📚 Documentation
+
+### Testing & Deployment
+
+Complete autonomous E2E testing and deployment infrastructure:
+
+**📖 Main Guides:**
+- **[Testing Overview](docs/testing/README.md)** - Complete testing infrastructure guide
+- **[Deployment Scripts](docs/testing/SCRIPTS.md)** - Deploy, sync, backup, rollback scripts
+- **[Playwright Setup](docs/testing/PLAYWRIGHT.md)** - E2E testing configuration
+- **[Examples](docs/testing/EXAMPLES.md)** - Practical examples and workflows
+
+**🎯 Quick Links:**
+```bash
+# Quick smoke test (30 sec)
+npm run test:smoke
+
+# Deploy and test automatically
+npm run deploy:test
+
+# Check production sync status
+npm run sync
+
+# Full E2E tests (all platforms)
+npm run test:all
+```
+
+**Testing Coverage:**
+- ✅ Chrome, Firefox, Safari (Desktop)
+- ✅ iPhone 14 Pro, Samsung Galaxy S21, iPad Pro (Mobile)
+- ✅ Slow connection, VPN fallback, error scenarios
+- ✅ Automatic screenshots & videos on failure
+- ✅ Console error & network failure tracking
+
+---
+
 ## 📝 Support & Issues
 
 **Production Status:** ✅ Plugin is stable and tested on [alexeykrol.com](https://alexeykrol.com)

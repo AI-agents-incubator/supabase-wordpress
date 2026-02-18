@@ -1,7 +1,7 @@
 # BACKLOG — Supabase Bridge
 
 *Framework: Claude Code Starter v2.3.1*
-*Last Updated: 2026-02-06*
+*Last Updated: 2026-02-17*
 
 ---
 
@@ -13,6 +13,15 @@
 ---
 
 ## Active Sprint
+
+### Deployed - Opera VPN OTP Fallback (2026-02-17)
+- [x] Fixed Opera VPN auth hangs by enabling OTP code fallback (commit 773aa73)
+- [x] Updated Supabase email template to include both Magic Link + 6-digit OTP code
+- [x] Unhidden code entry button in auth-form.html (removed `display: none`)
+- [x] Improved UX texts: "💡 Проблемы со входом? Используйте код из письма"
+- [x] Deployed auth-form.html to production (Feb 17 21:59)
+- [x] Added post-deploy improvement plan to BACKLOG (telemetry, error screen button, E2E tests)
+- [ ] **NEXT:** Manual testing in production (verify email has code, test OTP entry flow)
 
 ### Completed - v0.10.6 Release (2026-02-06)
 - [x] Fixed auto-enrollment for Zapier/manual transactions (gateway = 'manual')
@@ -263,6 +272,22 @@ When development resumes, pick from ROADMAP.md:
 - [ ] Video tutorial (YouTube)
 - [ ] Supabase RLS examples
 - [ ] Troubleshooting guide
+
+### Post-Deploy Improvements (OTP Fallback Flow)
+**Context:** v0.10.7 added OTP code fallback for Opera VPN users (commit 773aa73)
+
+- [ ] **Telemetry tracking** — Add `otp_code_success`/`otp_code_failure` events
+  - Track how often users use OTP code fallback vs Magic Link
+  - Monitor success/failure rates for OTP code entry
+  - Calculate real impact of fallback feature
+- [ ] **Error screen UX** — Add "Enter code" button on callback error screen
+  - When callback fails (timeout/VPN block), show explicit "💡 Use code from email" button
+  - Button redirects back to auth form with code entry visible
+  - Improves discoverability of fallback option
+- [ ] **E2E test scenario** — "Magic Link hangs → OTP code success"
+  - Requires Playwright/Cypress setup
+  - Test flow: Send email → Enter code → Verify callback → Check WordPress login
+  - Prevents regressions in OTP flow
 
 ### Low Priority
 - [ ] Email Delivery UX Improvements (Phase 23) — See EMAIL_DELIVERY_ANALYSIS.md
