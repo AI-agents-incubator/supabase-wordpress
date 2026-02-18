@@ -1455,6 +1455,9 @@ function sb_handle_callback(\WP_REST_Request $req) {
   set_transient($rate_key, $attempts + 1, 60); // 60 seconds window
 
   // CSRF Protection: Strict Origin/Referer validation
+  // OAuth callback scenario: User redirects FROM Google/Facebook TO site
+  // Safari privacy features may set Referer to OAuth provider instead of our site
+  // Solution: Allow OAuth provider domains (Google/Facebook) for OAuth callbacks
   $origin = $req->get_header('origin');
   $referer = $req->get_header('referer');
   $allowed_host = parse_url(home_url(), PHP_URL_HOST);
@@ -1474,10 +1477,37 @@ function sb_handle_callback(\WP_REST_Request $req) {
     'referer' => $referer ? substr($referer, 0, 50) . '...' : null
   ]);
 
-  // MUST have Origin or Referer, and it MUST exactly match our host
-  if (!$request_host || $request_host !== $allowed_host) {
-    sb_log("CSRF check failed", 'ERROR', ['request_host' => $request_host, 'allowed_host' => $allowed_host]);
+  // Allowed OAuth provider hosts (for OAuth callback scenario)
+  $allowed_oauth_hosts = [
+    'accounts.google.com',   // Google OAuth
+    'www.facebook.com',      // Facebook OAuth
+    'facebook.com',          // Facebook OAuth (alternative)
+    'm.facebook.com'         // Facebook OAuth (mobile)
+  ];
+
+  // Check 1: Request from our own site (normal case)
+  $is_same_origin = ($request_host === $allowed_host);
+
+  // Check 2: Request from OAuth provider (OAuth callback scenario)
+  $is_oauth_callback = in_array($request_host, $allowed_oauth_hosts, true);
+
+  // PASS if: Same origin OR OAuth callback
+  // FAIL if: Missing Origin/Referer OR Unknown origin
+  if (!$request_host || (!$is_same_origin && !$is_oauth_callback)) {
+    sb_log("CSRF check failed", 'ERROR', [
+      'request_host' => $request_host,
+      'allowed_host' => $allowed_host,
+      'is_same_origin' => $is_same_origin,
+      'is_oauth_callback' => $is_oauth_callback
+    ]);
     return new \WP_Error('csrf', 'Invalid origin', ['status'=>403]);
+  }
+
+  // Log successful CSRF validation
+  if ($is_oauth_callback) {
+    sb_log("CSRF check passed (OAuth callback)", 'DEBUG', ['oauth_provider' => $request_host]);
+  } else {
+    sb_log("CSRF check passed (same origin)", 'DEBUG');
   }
 
   $jwt = $req->get_param('access_token');
