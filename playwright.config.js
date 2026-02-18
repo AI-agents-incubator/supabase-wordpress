@@ -17,7 +17,11 @@ export default defineConfig({
   workers: 1,
 
   // Reporter to use
-  reporter: 'html',
+  reporter: [
+    ['html'],
+    ['json', { outputFile: 'test-results/results.json' }],
+    ['list']
+  ],
 
   // Shared settings for all the projects below
   use: {

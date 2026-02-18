@@ -21,6 +21,7 @@ test.describe('Special Scenarios', () => {
     });
 
     await page.goto('/test-no-elem/', { timeout: 30000 });
+    await page.waitForTimeout(3000);
 
     // Page should eventually load
     await expect(page.locator('#sb-google-btn')).toBeVisible({ timeout: 30000 });
@@ -29,6 +30,7 @@ test.describe('Special Scenarios', () => {
   test('OTP code fallback button is visible (VPN scenario)', async ({ page }) => {
     await page.goto('/test-no-elem/');
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     // Check that OTP code toggle button exists
     const codeToggle = page.locator('#sb-show-code');
@@ -45,6 +47,7 @@ test.describe('Special Scenarios', () => {
   test('OTP code entry form has correct placeholders', async ({ page }) => {
     await page.goto('/test-no-elem/');
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     // Check OTP code input placeholder
     const codeInput = page.locator('#sb-code-input');
@@ -112,6 +115,7 @@ test.describe('Special Scenarios', () => {
   test('Multiple rapid clicks do not break auth', async ({ page }) => {
     await page.goto('/test-no-elem/');
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     const googleButton = page.locator('#sb-google-btn');
 

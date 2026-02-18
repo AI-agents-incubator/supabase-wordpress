@@ -14,6 +14,7 @@ test.describe('Mobile - iPhone 14 Pro', () => {
   test('Auth page loads and displays correctly on iPhone', async ({ page }) => {
     await page.goto('/test-no-elem/');
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     // Check viewport
     const viewport = page.viewportSize();
@@ -24,11 +25,13 @@ test.describe('Mobile - iPhone 14 Pro', () => {
     await expect(page.locator('#sb-facebook-btn')).toBeVisible();
 
     // Email input should be visible
-    await expect(page.locator('#sb-email')).toBeVisible();
+    await expect(page.locator('#sb-email-input')).toBeVisible();
   });
 
   test('Google OAuth works on iPhone', async ({ page }) => {
     await page.goto('/test-no-elem/');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     await page.locator('#sb-google-btn').click();
 
@@ -39,12 +42,14 @@ test.describe('Mobile - iPhone 14 Pro', () => {
 
   test('Touch events work on mobile', async ({ page }) => {
     await page.goto('/test-no-elem/');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     // Tap email input
-    await page.locator('#sb-email').tap();
+    await page.locator('#sb-email-input').tap();
 
     // Should focus
-    const isFocused = await page.locator('#sb-email').evaluate(el =>
+    const isFocused = await page.locator('#sb-email-input').evaluate(el =>
       el === document.activeElement
     );
 
@@ -58,6 +63,7 @@ test.describe('Mobile - Samsung Galaxy S21', () => {
   test('Auth page loads on Android', async ({ page }) => {
     await page.goto('/test-no-elem/');
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     // Check Android viewport
     const viewport = page.viewportSize();
@@ -66,11 +72,13 @@ test.describe('Mobile - Samsung Galaxy S21', () => {
     // All elements should be visible
     await expect(page.locator('#sb-google-btn')).toBeVisible();
     await expect(page.locator('#sb-facebook-btn')).toBeVisible();
-    await expect(page.locator('#sb-email')).toBeVisible();
+    await expect(page.locator('#sb-email-input')).toBeVisible();
   });
 
   test('Facebook OAuth works on Android', async ({ page }) => {
     await page.goto('/test-no-elem/');
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     await page.locator('#sb-facebook-btn').click();
 
@@ -86,6 +94,7 @@ test.describe('Mobile - iPad Pro', () => {
   test('Auth page loads on iPad', async ({ page }) => {
     await page.goto('/test-no-elem/');
     await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(2000);
 
     // iPad viewport is larger
     const viewport = page.viewportSize();

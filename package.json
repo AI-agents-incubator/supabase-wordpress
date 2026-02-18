@@ -1,12 +1,14 @@
 {
+  "type": "module",
   "scripts": {
-    "test:smoke": "playwright test tests/e2e-production/smoke.spec.js --reporter=line",
-    "test:chrome": "playwright test tests/e2e-production/chrome-desktop.spec.js --project=chrome-desktop",
-    "test:mobile": "playwright test tests/e2e-production/mobile.spec.js",
-    "test:special": "playwright test tests/e2e-production/special-scenarios.spec.js",
-    "test:all": "playwright test tests/e2e-production/",
-    "test:production": "playwright test tests/e2e-production/ --reporter=html",
+    "test:smoke": "playwright test tests/e2e-production/smoke.spec.js && node scripts/generate-bug-report.js",
+    "test:chrome": "playwright test tests/e2e-production/chrome-desktop.spec.js --project=chrome-desktop && node scripts/generate-bug-report.js",
+    "test:mobile": "playwright test tests/e2e-production/mobile.spec.js && node scripts/generate-bug-report.js",
+    "test:special": "playwright test tests/e2e-production/special-scenarios.spec.js && node scripts/generate-bug-report.js",
+    "test:all": "playwright test tests/e2e-production/ && node scripts/generate-bug-report.js",
+    "test:production": "playwright test tests/e2e-production/ --reporter=html && node scripts/generate-bug-report.js",
     "test:headed": "playwright test tests/e2e-production/ --headed",
+    "test:report": "node scripts/generate-bug-report.js",
     "deploy": "./scripts/deploy.sh",
     "deploy:test": "./scripts/deploy-and-test.sh",
     "sync": "./scripts/sync-production.sh"

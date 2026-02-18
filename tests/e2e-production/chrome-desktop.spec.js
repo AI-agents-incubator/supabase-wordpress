@@ -91,11 +91,11 @@ test.describe('Chrome Desktop - User Journeys', () => {
     await page.waitForLoadState('networkidle');
 
     // Fill email
-    const emailInput = page.locator('#sb-email');
+    const emailInput = page.locator('#sb-email-input');
     await emailInput.fill('test@example.com');
 
     // Click submit
-    const submitButton = page.locator('#sb-submit');
+    const submitButton = page.locator('button[type="submit"]');
     await submitButton.click();
 
     // Wait for response
