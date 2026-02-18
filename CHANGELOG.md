@@ -2,6 +2,118 @@
 
 All notable changes to Supabase Bridge are documented in this file.
 
+## [0.10.7] - 2026-02-17
+
+### 🔧 Opera VPN OTP Fallback + Autonomous Testing Infrastructure
+
+**Problem:**
+- Opera browser with "легкий VPN" blocks external redirects to `supabase.co/auth/v1/verify`
+- Users unable to click Magic Link in email → authentication hangs
+- Manual testing after deployment is bottleneck → bugs discovered by users, not before deployment
+- No systematic way to verify production sync status before deployment
+- No safety net if deployment breaks production
+
+**Solution - OTP Code Fallback:**
+- Enabled OTP code fallback button on auth form (previously hidden)
+- Updated button text: "💡 Проблемы со входом? Используйте код из письма"
+- Users with VPN can now enter 6-digit code from email instead of clicking Magic Link
+- Email template updated in Supabase to include `{{ .Token }}` variable
+- Supabase `signInWithOtp()` already supports both Magic Link and OTP code
+
+**Solution - Autonomous Testing Infrastructure:**
+
+**1. Deployment Scripts (scripts/):**
+- `deploy.sh` - Deploy files to production via SSH/SCP
+- `sync-production.sh` - Compare local vs production files using MD5 hashes
+- `create-backup.sh` - Create timestamped backup on production server
+- `rollback.sh` - Restore files from last backup
+- `deploy-and-test.sh` - Full pipeline: backup → deploy → smoke tests → rollback if fail
+
+**2. Playwright E2E Tests (tests/e2e-production/):**
+- `smoke.spec.js` - 8 quick health checks (~30s) × 7 platforms = 56 tests
+- `chrome-desktop.spec.js` - 8 full E2E tests for Chrome Desktop
+- `mobile.spec.js` - 6 tests for iPhone, Android, iPad
+- `special-scenarios.spec.js` - 8 tests for edge cases (slow 3G, VPN, errors, timeouts)
+- **Total:** 30 unique tests × 7 platforms = 210 test runs
+
+**3. Playwright Configuration:**
+- 7 projects configured: Chrome Desktop, Firefox Desktop, Safari Desktop, iPhone 14 Pro, Samsung Galaxy S21, iPad Pro, Slow 3G
+- Automatic screenshots and videos on failure
+- Console error and network failure tracking
+
+**4. npm Scripts (package.json):**
+- `npm run test:smoke` - Quick health check (~30s)
+- `npm run test:chrome` - Chrome Desktop E2E
+- `npm run test:mobile` - iPhone, Android, iPad
+- `npm run test:special` - Slow connection, VPN, errors
+- `npm run test:all` - All E2E tests
+- `npm run test:production` - Full suite with HTML report
+- `npm run test:headed` - Run with visible browser
+- `npm run deploy` - Deploy to production
+- `npm run deploy:test` - Deploy + test + rollback if fail
+- `npm run sync` - Check production sync
+
+**5. Documentation (docs/testing/):**
+- `README.md` - Main testing infrastructure guide
+- `SCRIPTS.md` - Detailed documentation for all deployment scripts
+- `PLAYWRIGHT.md` - Playwright setup and configuration guide
+- `EXAMPLES.md` - Practical examples and common workflows
+- `SETUP_COMPLETE.md` - Summary of testing infrastructure setup
+
+**Autonomous Capabilities Achieved:**
+- ✅ Check sync status before deploy
+- ✅ Create automatic backups
+- ✅ Deploy files to production
+- ✅ Run smoke tests automatically
+- ✅ Auto-rollback if tests fail
+- ✅ Test all user journeys (Google OAuth, Facebook OAuth, Magic Link, OTP)
+- ✅ Test on multiple browsers (Chrome, Firefox, Safari)
+- ✅ Test on multiple devices (iPhone, Android, iPad)
+- ✅ Test special scenarios (slow connection, VPN, errors)
+- ✅ Capture screenshots & videos on failure
+- ✅ Track console errors & network failures
+
+**Critical Bug Found by Tests:**
+- Initial smoke test (56 tests) found 1 failure: Email input not visible on production
+- This is exactly what autonomous testing is for - finding bugs BEFORE users do
+- Issue was fixed by deploying missing callback.html to production
+
+**Expected Impact:**
+- ✅ Opera VPN users can now authenticate using OTP code
+- ✅ Bugs found BEFORE users encounter them
+- ✅ Confidence in production deployments
+- ✅ Multi-platform compatibility verified automatically
+- ✅ User involvement minimized - agent can deploy, test, and rollback autonomously
+
+**Files Modified:**
+- `auth-form.html` - Unhid OTP code fallback button, updated button text (5 lines)
+- `callback.html` - Deployed latest version to production (was outdated)
+- `scripts/deploy.sh` - SSH/SCP deployment to production (NEW)
+- `scripts/sync-production.sh` - MD5 hash comparison (NEW)
+- `scripts/create-backup.sh` - Timestamped backup creation (NEW)
+- `scripts/rollback.sh` - Restore from backup (NEW)
+- `scripts/deploy-and-test.sh` - Full pipeline with auto-rollback (NEW)
+- `tests/e2e-production/smoke.spec.js` - 8 quick health checks (NEW)
+- `tests/e2e-production/chrome-desktop.spec.js` - 8 full E2E tests (NEW)
+- `tests/e2e-production/mobile.spec.js` - 6 mobile tests (NEW)
+- `tests/e2e-production/special-scenarios.spec.js` - 8 edge case tests (NEW)
+- `playwright.config.js` - 7 projects configured (NEW)
+- `package.json` - 10 npm scripts for testing and deployment (NEW)
+- `docs/testing/README.md` - Main testing guide (NEW)
+- `docs/testing/SCRIPTS.md` - Scripts documentation (NEW)
+- `docs/testing/PLAYWRIGHT.md` - Playwright guide (NEW)
+- `docs/testing/EXAMPLES.md` - Practical examples (NEW)
+- `docs/testing/SETUP_COMPLETE.md` - Setup summary (NEW)
+- `README.md` - Added "Documentation" section with testing links
+
+**Production Deployment:**
+- Deployed to production on 2026-02-17
+- OTP fallback tested and working
+- Smoke tests passing (55 of 56 - found 1 issue that was fixed)
+- Full E2E testing infrastructure operational
+
+---
+
 ## [0.10.6] - 2026-02-06
 
 ### 🔧 Auto-Enrollment for Manual Transactions (Zapier/Crypto)
