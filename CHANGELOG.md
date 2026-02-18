@@ -2,7 +2,7 @@
 
 All notable changes to Supabase Bridge are documented in this file.
 
-## [0.10.7] - 2026-02-17
+## [0.10.7] - 2026-02-18
 
 ### 🔧 Opera VPN OTP Fallback + Autonomous Testing Infrastructure
 
@@ -73,6 +73,16 @@ All notable changes to Supabase Bridge are documented in this file.
 - ✅ Capture screenshots & videos on failure
 - ✅ Track console errors & network failures
 
+**6. Bug Fixes:**
+- **CSRF Protection:** Fixed CSRF validation to allow OAuth provider domains (accounts.google.com, facebook.com, m.facebook.com)
+  - Safari was blocking OAuth callbacks due to strict Referer checking
+  - Now OAuth callbacks from Google/Facebook are explicitly whitelisted
+  - Maintains security while allowing legitimate OAuth flows
+- **E2E Test Selectors:** Corrected test selectors to match production auth form
+  - Fixed: `#sb-email` → `#sb-email-input`
+  - Fixed: `#sb-submit` → `button[type="submit"]`
+  - All 36 tests now use correct production selectors
+
 **Critical Bug Found by Tests:**
 - Initial smoke test (56 tests) found 1 failure: Email input not visible on production
 - This is exactly what autonomous testing is for - finding bugs BEFORE users do
@@ -86,8 +96,13 @@ All notable changes to Supabase Bridge are documented in this file.
 - ✅ User involvement minimized - agent can deploy, test, and rollback autonomously
 
 **Files Modified:**
+- `supabase-bridge.php` - CSRF validation fix for OAuth providers (lines 1457-1511)
 - `auth-form.html` - Unhid OTP code fallback button, updated button text (5 lines)
 - `callback.html` - Deployed latest version to production (was outdated)
+- `tests/e2e-production/smoke.spec.js` - Fixed selectors to match production
+- `tests/e2e-production/chrome-desktop.spec.js` - Fixed selectors to match production
+- `tests/e2e-production/mobile.spec.js` - Fixed selectors to match production
+- `tests/e2e-production/special-scenarios.spec.js` - Fixed selectors to match production
 - `scripts/deploy.sh` - SSH/SCP deployment to production (NEW)
 - `scripts/sync-production.sh` - MD5 hash comparison (NEW)
 - `scripts/create-backup.sh` - Timestamped backup creation (NEW)
@@ -107,10 +122,12 @@ All notable changes to Supabase Bridge are documented in this file.
 - `README.md` - Added "Documentation" section with testing links
 
 **Production Deployment:**
-- Deployed to production on 2026-02-17
-- OTP fallback tested and working
-- Smoke tests passing (55 of 56 - found 1 issue that was fixed)
-- Full E2E testing infrastructure operational
+- Initial deployment: 2026-02-17
+- Latest deployment: 2026-02-18 (CSRF fix + test improvements)
+- OTP fallback tested and working (verified via VPN)
+- OAuth authentication working (Google, Facebook)
+- Magic Link working (both link and OTP code)
+- All authentication methods verified on production
 
 ---
 
