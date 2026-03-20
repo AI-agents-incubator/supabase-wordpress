@@ -373,6 +373,12 @@ Disable MemberPress default registration (conflicts with Supabase Auth):
 curl -I https://yoursite.com/reg_ai_intro/ | grep -i cache
 ```
 
+### Site Customizations
+
+All manual changes to the production WordPress site (plugins, theme, DB) that are not part of this plugin are tracked in **[SITE_CUSTOMIZATIONS.md](./SITE_CUSTOMIZATIONS.md)**.
+
+> This file is the single source of truth for "what did we change and where" — critical for knowing what to re-apply after plugin updates.
+
 ### Third-party Plugin Notes
 
 #### Strong Testimonials Pro — Sort Order Fix (2026-03-20)
