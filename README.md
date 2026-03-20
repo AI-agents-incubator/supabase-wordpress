@@ -373,6 +373,24 @@ Disable MemberPress default registration (conflicts with Supabase Auth):
 curl -I https://yoursite.com/reg_ai_intro/ | grep -i cache
 ```
 
+### Third-party Plugin Notes
+
+#### Strong Testimonials Pro — Sort Order Fix (2026-03-20)
+
+**Views affected:** View 29 (Квест. Отзывы), View 32 (Курс chatGPT)
+
+A sorting bug was discovered and fixed: testimonials were displaying in wrong order within each month (ascending by day instead of descending). Root cause — all testimonials were bulk-imported at the same time, giving them identical WordPress `post_date`. The plugin's "newest" sort mode uses `post_date`, which became meaningless.
+
+**Fix applied:** Changed `order` setting from `newest` to `submit_date` in `wp_strong_views` database table. The plugin now sorts by the actual submission date meta field.
+
+**This fix is in the database, not in plugin PHP files.** It survives normal plugin updates. However, if a Strong Testimonials update includes a database migration that resets view settings, the fix must be re-applied manually.
+
+**How to verify after a plugin update:**
+1. Go to WordPress Admin → Strong Testimonials → Views
+2. Open View 29 and View 32 → "Query" tab
+3. Confirm "Sort" field shows **"submit_date"** (not "newest" or "oldest")
+4. If it shows "newest" — revert to "submit_date" and save
+
 ---
 
 ## 📚 Documentation

@@ -2,6 +2,37 @@
 
 All notable changes to Supabase Bridge are documented in this file.
 
+## [Site Maintenance] - 2026-03-20
+
+### 🐛 Strong Testimonials — Fix: Wrong Sort Order Within Month
+
+**Plugin:** Strong Testimonials Pro (Views 29, 32)
+**Type:** Database configuration fix (NOT plugin code change)
+
+**Problem:**
+- Views 29 and 32 used `order="newest"` which sorts by WordPress `post_date`
+- All testimonials were bulk-imported simultaneously → all share identical `post_date = 2026-03-20 11:31:22`
+- With identical `post_date`, MySQL falls back to `id ASC` (insertion order)
+- Result: months sorted correctly (newer first), but within each month — days in ascending order instead of descending
+
+**Root Cause:**
+- Displayed date comes from custom meta field `submit_date` (actual submission date)
+- Sort was applied to `post_date` (WordPress publish date) — meaningless after bulk import
+
+**Fix:**
+- Updated View 29 ("Квест. Отзывы") and View 32 ("Курс chatGPT") in `wp_strong_views` table
+- Changed `order` field: `newest` → `submit_date`
+- Plugin now sorts by `submit_date` meta field (DATETIME) with `ORDER BY meta_value DESC`
+- No plugin PHP files were modified
+
+**⚠️ Important after any Strong Testimonials plugin update:**
+- This fix lives in the **database** (`wp_strong_views` table), NOT in plugin PHP files
+- Normal plugin updates overwrite PHP files but preserve database records — fix survives
+- Risk: if an update includes a DB migration that resets view settings, fix must be re-applied
+- **Verification after update:** Admin → Strong Testimonials → Views 29 & 32 → Query tab → Sort field must show "submit_date", not "newest"
+
+---
+
 ## [0.10.7] - 2026-02-18
 
 ### 🔧 Opera VPN OTP Fallback + Autonomous Testing Infrastructure
