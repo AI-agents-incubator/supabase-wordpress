@@ -15,6 +15,9 @@ wp-config-*.php
 monitoring/.env
 monitoring/telemetry-analyzer.env
 
+# Claude Code local permissions — NEVER commit (may contain credentials from auto-saved Allow prompts)
+.claude/settings.local.json
+
 # Composer
 /vendor/
 composer.lock
