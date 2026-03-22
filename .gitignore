@@ -65,6 +65,7 @@ supabase/add-landing-url-field.sql
 supabase/webhook-system-v0.8.5.sql
 
 # Claude dialogs
+dialog/2026-03-20_session-9d09e730.md
 dialog/2026-02-06_session-56022b25.md
 dialog/2026-02-06_session-6bbb76b9.md
 dialog/2026-02-06_session-4fc06147.md

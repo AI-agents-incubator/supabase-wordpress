@@ -1,14 +1,14 @@
 # BACKLOG — Supabase Bridge
 
 *Framework: Claude Code Starter v2.3.1*
-*Last Updated: 2026-02-17*
+*Last Updated: 2026-03-20*
 
 ---
 
 ## Current Status
 
-**Version:** 0.10.6 (Production Ready)
-**Phase:** Maintenance
+**Version:** 0.10.7 (Production Ready)
+**Phase:** Maintenance + Site Ops
 
 ---
 
@@ -19,6 +19,14 @@
 ---
 
 ## Recent Completions
+
+### Completed - Site Ops & Security (2026-03-20)
+- [x] Fixed WordPress maintenance mode stuck (removed stale .maintenance file)
+- [x] Fixed Strong Testimonials sort order bug (Views 29, 32: newest → submit_date)
+- [x] Created SITE_CUSTOMIZATIONS.md — registry of all production site changes
+- [x] Cleaned credentials from .claude/settings.local.json (security incident)
+- [x] Added .claude/settings.local.json to .gitignore (team-wide protection)
+- [x] Documented security incident and protocol in SITE_CUSTOMIZATIONS.md
 
 ### Completed - Testing & Deployment Infrastructure (2026-02-17)
 - [x] Installed and configured Playwright for E2E testing
