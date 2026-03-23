@@ -20,6 +20,17 @@
 
 ## Recent Completions
 
+### Completed - Site Ops & Settings Architecture (2026-03-22)
+- [x] Disabled MemberPress admin password notification email (mu-plugin: disable-password-notifications.php)
+- [x] Identified root cause: MemberPress uses own MeprUtils::wp_mail_to_admin(), not WordPress core hooks
+- [x] Documented fix in SITE_CUSTOMIZATIONS.md
+- [x] Designed and implemented clean Claude Code permissions hierarchy (4-file architecture)
+- [x] Updated ~/.claude/settings.json — clean global config with Bash(*) for full autonomy
+- [x] Deleted ~/.claude/settings.local.json — redundant global local file
+- [x] Updated .claude/settings.json — project-level WebFetch domain allowlist
+- [x] Updated .claude/settings.local.json — ask-confirmation for production SSH/MariaDB only
+- [x] Created CLAUDE_SETTINGS_HIERARCHY.md — full documentation of settings + CLAUDE.md hierarchy, bypassPermissions mechanics, security model
+
 ### Completed - Site Ops & Security (2026-03-20)
 - [x] Fixed WordPress maintenance mode stuck (removed stale .maintenance file)
 - [x] Fixed Strong Testimonials sort order bug (Views 29, 32: newest → submit_date)

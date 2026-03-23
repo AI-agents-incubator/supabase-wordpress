@@ -97,6 +97,42 @@ foreach ($rows as $row) {
 
 ---
 
+## 2026-03-22 — MemberPress: отключение admin-уведомления о сбросе пароля
+
+**Плагин:** MemberPress
+**Тип изменения:** must-use плагин (постоянный, не зависит от темы)
+
+**Проблема:**
+При каждом сбросе пароля пользователем MemberPress отправлял администратору письмо с темой `[Теория Каст и Ролей] Password Lost/Changed`. WordPress-хук `wp_password_change_notification` не работал, так как MemberPress отправляет через собственную функцию `MeprUtils::wp_mail_to_admin()`, минуя стандартный WordPress action.
+
+**Решение:**
+Создан must-use плагин: `wp-content/mu-plugins/disable-password-notifications.php`
+
+```php
+// Block WordPress core admin notification
+remove_action( 'after_password_reset', 'wp_password_change_notification' );
+
+// Block MemberPress admin notification via wp_mail filter
+add_filter( 'wp_mail', function( $args ) {
+    if ( isset( $args['subject'] ) && strpos( $args['subject'], 'Password Lost/Changed' ) !== false ) {
+        $args['to'] = '';
+    }
+    return $args;
+} );
+```
+
+**Риск при обновлении:** отсутствует
+Must-use плагины WordPress-обновлениями не затрагиваются. MemberPress обновления тоже не удаляют mu-plugins.
+
+**Проверка:** попросить пользователя сбросить пароль — письмо администратору приходить не должно.
+
+**Восстановление (если надо вернуть уведомления обратно):**
+```bash
+rm /home/u465545808/domains/alexeykrol.com/public_html/wp-content/mu-plugins/disable-password-notifications.php
+```
+
+---
+
 ## 2026-03-20 — WordPress Maintenance Mode: экстренное снятие
 
 **Тип изменения:** удаление файла (не постоянная кастомизация, для памяти)
