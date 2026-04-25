@@ -337,3 +337,5 @@ dialog/2026-01-10_session-9d6a6938.md.last-backup
 test-results/
 playwright-report/
 playwright/.cache/
+.handoffs/local/
+.handoffs/*.local.md
