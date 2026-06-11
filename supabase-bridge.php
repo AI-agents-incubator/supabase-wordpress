@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Supabase Bridge (Auth)
  * Description: Mirrors Supabase users into WordPress and logs them in via JWT. Enhanced security with audit logging and hardening. Includes webhook system for n8n/Make.com integration. Production debugging with enhanced logging.
- * Version: 0.10.7
+ * Version: 0.10.8
  * Author: Alexey Krol
  * License: MIT
  * Requires at least: 5.0
@@ -284,7 +284,8 @@ function sb_get_thankyou_url() {
 // Execute SQL query via Supabase REST API
 function sb_execute_supabase_sql($sql) {
   $url = sb_cfg('SUPABASE_URL');
-  $anon_key = sb_cfg('SUPABASE_ANON_KEY');
+  // SECURITY 2026-06-11: arbitrary SQL must run under service_role, never the public anon key.
+  $anon_key = sb_cfg('SUPABASE_SERVICE_ROLE_KEY');
 
   if (empty($url) || empty($anon_key)) {
     return ['success' => false, 'error' => 'Supabase credentials not configured'];
@@ -483,7 +484,9 @@ function sb_validate_site_url($url) {
 function sb_sync_pair_to_supabase($pair_data) {
   try {
     $url = sb_cfg('SUPABASE_URL');
-    $anon_key = sb_cfg('SUPABASE_ANON_KEY');
+    // SECURITY 2026-06-11: server-side write uses service_role (public anon key would let anyone forge writes).
+    // Var name kept as $anon_key for minimal diff; it now carries the service_role key.
+    $anon_key = sb_cfg('SUPABASE_SERVICE_ROLE_KEY');
 
     // Validate credentials
     if (empty($url) || empty($anon_key)) {
@@ -555,7 +558,9 @@ function sb_sync_pair_to_supabase($pair_data) {
 function sb_delete_pair_from_supabase($pair_id) {
   try {
     $url = sb_cfg('SUPABASE_URL');
-    $anon_key = sb_cfg('SUPABASE_ANON_KEY');
+    // SECURITY 2026-06-11: server-side write uses service_role (public anon key would let anyone forge deletes).
+    // Var name kept as $anon_key for minimal diff; it now carries the service_role key.
+    $anon_key = sb_cfg('SUPABASE_SERVICE_ROLE_KEY');
 
     // Validate credentials
     if (empty($url) || empty($anon_key)) {
@@ -633,7 +638,9 @@ function sb_get_thankyou_url_for_registration($registration_url) {
 function sb_log_registration_to_supabase($user_email, $supabase_user_id, $registration_url, $landing_url = null) {
   try {
     $url = sb_cfg('SUPABASE_URL');
-    $anon_key = sb_cfg('SUPABASE_ANON_KEY');
+    // SECURITY 2026-06-11: server-side write uses service_role (public anon key would let anyone forge registrations).
+    // Var name kept as $anon_key for minimal diff; it now carries the service_role key.
+    $anon_key = sb_cfg('SUPABASE_SERVICE_ROLE_KEY');
 
     // Validate credentials
     if (empty($url) || empty($anon_key)) {
